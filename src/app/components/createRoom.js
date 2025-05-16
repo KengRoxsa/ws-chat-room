@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { auth } from "../services/firebase"; // นำเข้า Firebase Auth
 
 export default function CreateChatRoomButton() {
   const [loading, setLoading] = useState(false);
@@ -9,14 +10,31 @@ export default function CreateChatRoomButton() {
   const handleCreateRoom = async () => {
     setLoading(true);
     try {
+      const user = auth.currentUser; // ตรวจสอบว่าเป็นผู้ใช้ที่ล็อกอินอยู่
+
+      if (!user) {
+        alert('You must be logged in to create a room');
+        return;
+      }
+
+      // ดึง ID Token
+      const idToken = await user.getIdToken();
+
       const res = await fetch('/api/createRoom', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,  // ส่ง token ใน header
+        },
+        body: JSON.stringify({
+          createdBy: user.uid, // ส่ง createdBy ใน body
+        }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // ✅ ไปยังหน้าห้องแชทที่สร้างใหม่
+        // ไปยังหน้าห้องแชทที่สร้างใหม่
         router.push(`/room/${data.roomId}`);
       } else {
         alert('Failed to create room');
