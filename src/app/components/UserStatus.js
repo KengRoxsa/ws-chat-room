@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useEffect, useState } from 'react';
 import { auth, signOutUser } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -29,33 +29,28 @@ function UserStatus() {
   if (!user) return null;
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow flex items-center justify-between mt-4">
-      <div className="flex items-center space-x-3">
-        <img src={user.photoURL || ''} alt="User avatar" className="w-8 h-8 rounded-full" />
+    <div className="bg-white p-4 rounded-xl shadow flex flex-col sm:flex-row items-center sm:justify-between mt-4">
+      <div className="flex items-center space-x-3 mb-4 sm:mb-0">
+        <img src={user.photoURL || ''} alt="User avatar" className="w-12 h-12 rounded-full" />
         <span className="text-sm text-gray-700 font-medium">{user.displayName || 'User'}</span>
       </div>
-      <div>
-        <Link href={"/chat"}
+
+      <div className="flex items-center space-x-3 sm:space-x-4">
+        <Link href="/chat">
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            All Chat
+          </button>
+        </Link>
+
+        <CreateChatRoomButton />
+
+        <button
+          onClick={handleSignOut}
+          className="text-sm text-red-600 hover:underline"
         >
-
-        <button 
-        
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-
-          All Chat
+          Sign out
         </button>
-          </Link>
       </div>
-      <div className="flex items-center space-x-3">
-
-      <CreateChatRoomButton />
-      <button
-        onClick={handleSignOut}
-        className="text-sm text-red-600 hover:underline"
-        >
-        Sign out
-      </button>
-        </div>
     </div>
   );
 }

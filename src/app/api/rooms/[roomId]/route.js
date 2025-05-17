@@ -1,12 +1,12 @@
-import { getAdminAuth } from '@/lib/firebaseAdmin'; // ต้อง import มาจากไฟล์ firebaseAdmin.js
+import { getAdminAuth } from '@/lib/firebaseAdmin'; 
 import clientPromise from '@/lib/mongodb';
 import { NextResponse } from 'next/server';
 
-// ฟังก์ชั่นตรวจสอบ Firebase Token
+
 async function verifyToken(token) {
   try {
     console.log("🧪 Verifying token:", token);
-    const decodedToken = await getAdminAuth().verifyIdToken(token); // ใช้ชื่อใหม่ที่ import มา
+    const decodedToken = await getAdminAuth().verifyIdToken(token); 
     console.log("✅ Decoded token:", decodedToken);
     return decodedToken;
   } catch (error) {
@@ -20,7 +20,7 @@ export async function DELETE(req, { params }) {
     const { roomId } = params;
     console.log("🧪 Room ID:", roomId);
 
-    // ดึง token จาก header ของ request
+    
     const token = req.headers.get('Authorization')?.split('Bearer ')[1];
     console.log("🧪 Received token:", token); 
 
@@ -29,9 +29,8 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ message: 'Authorization token is required' }, { status: 401 });
     }
 
-    // ตรวจสอบ token จาก Firebase
-    const decodedToken = await verifyToken(token); // ใช้ฟังก์ชัน verifyToken ที่สร้างขึ้นมา
-
+    
+    const decodedToken = await verifyToken(token); 
     if (!decodedToken) {
       console.log("❌ Token is invalid or could not be decoded");
       return NextResponse.json({ message: 'Invalid token' }, { status: 403 });
