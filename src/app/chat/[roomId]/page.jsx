@@ -71,32 +71,33 @@ export default function ChatRoomPage() {
   }, [roomId]);
 
   // ✉️ ส่งข้อความ
-  const sendMessage = () => {
-    const currentUser = auth.currentUser;
-    if (
-      input.trim() &&
-      currentUser &&
-      ws.current &&
-      ws.current.readyState === WebSocket.OPEN
-    ) {
-      const msg = {
-        text: input,
-        sender: currentUser.email,
-        time: new Date().toISOString(),
-        photoURL: currentUser.photoURL || "/default-avatar.png",
-      };
-      console.log("📤 Sending:", msg);
-      ws.current.send(JSON.stringify(msg));
-      setMessages((prev) => [...prev, msg]);
-      setInput("");
-    } else {
-      console.warn("⚠️ Cannot send message:", {
-        input,
-        currentUser,
-        wsReady: ws.current?.readyState,
-      });
-    }
-  };
+const sendMessage = () => {
+  const currentUser = auth.currentUser;
+  if (
+    input.trim() &&
+    currentUser &&
+    ws.current &&
+    ws.current.readyState === WebSocket.OPEN
+  ) {
+    const msg = {
+      text: input,
+      sender: currentUser.email,
+      time: new Date().toISOString(),
+      photoURL: currentUser.photoURL || "/default-avatar.png",
+    };
+    console.log("📤 Sending:", msg);
+    ws.current.send(JSON.stringify(msg));
+    // ❌ ไม่ต้อง push เข้า setMessages แล้ว!
+    setInput("");
+  } else {
+    console.warn("⚠️ Cannot send message:", {
+      input,
+      currentUser,
+      wsReady: ws.current?.readyState,
+    });
+  }
+};
+
 
   return (
     <div className="p-6">
