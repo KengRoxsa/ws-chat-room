@@ -59,8 +59,8 @@ useEffect(() => {
   useEffect(() => {
     
     if (!roomId) return;
-
-    ws.current = new WebSocket(`ws://localhost:3001?roomId=${roomId}`);
+const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001";
+ws.current = new WebSocket(`${wsUrl}?roomId=${roomId}`);
 
     ws.current.onmessage = (event) => {
       const msg = JSON.parse(event.data);
@@ -79,6 +79,13 @@ useEffect(() => {
       setInput("");
     }
   };
+  ws.current.onopen = () => {
+  console.log("✅ WebSocket connected");
+};
+
+ws.current.onerror = (err) => {
+  console.error("❌ WebSocket error", err);
+};
 
   return (
     <div className="p-6">
