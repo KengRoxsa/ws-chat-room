@@ -5,18 +5,17 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/app/services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
-
 export default function ChatRoomPage() {
-  const { roomId } = useParams(); // ดึง roomId จาก URL
+  const { roomId } = useParams();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [roomName, setRoomName] = useState(""); // สถานะสำหรับเก็บชื่อห้อง
+  const [roomName, setRoomName] = useState("");
   const ws = useRef(null);
 
   const router = useRouter();
-  const [rooms, setRooms] = useState([]);
 
-   useEffect(() => {
+  // 🔐 ตรวจสอบสถานะการล็อกอิน
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         router.replace("/");
@@ -26,71 +25,63 @@ export default function ChatRoomPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // 🎯 โหลดชื่อห้องจาก API
-useEffect(() => {
-  const fetchRoom = async () => {
-    console.log("Fetching room data...");
-    try {
-      const res = await fetch(`/api/room/${roomId}`);
-      console.log("API Response:", res);
-      const data = await res.json();
-      console.log("Fetched room data:", data);
-
-      // ใช้ room.roomId แทน room.id
-      const room = data.rooms.find(room => room.roomId === roomId);
-      if (room) {
-        setRoomName(room.name || "Unnamed Room"); // กำหนดชื่อห้อง
-      } else {
-        setRoomName("Room not found");
+  // 📦 โหลดข้อมูลห้อง
+  useEffect(() => {
+    const fetchRoom = async () => {
+      try {
+        const res = await fetch(`/api/room/${roomId}`);
+        const data = await res.json();
+        const room = data.rooms.find((room) => room.roomId === roomId);
+        setRoomName(room ? room.name || "Unnamed Room" : "Room not found");
+      } catch (error) {
+        console.error("Failed to fetch room info:", error);
+        setRoomName("Unknown Room");
       }
-    } catch (error) {
-      console.error("Failed to fetch room info:", error);
-      setRoomName("Unknown Room");
-    }
-  };
+    };
 
-  if (roomId) fetchRoom();
-}, [roomId]);
-
-
-
+    if (roomId) fetchRoom();
+  }, [roomId]);
 
   // 📡 เชื่อมต่อ WebSocket
   useEffect(() => {
-    
     if (!roomId) return;
-const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001";
-ws.current = new WebSocket(`${wsUrl}?roomId=${roomId}`);
 
-    ws.current.onmessage = (event) => {
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001";
+    const socket = new WebSocket(`${wsUrl}?roomId=${roomId}`);
+    ws.current = socket;
+
+    socket.onopen = () => {
+      console.log("✅ WebSocket connected");
+    };
+
+    socket.onerror = (err) => {
+      console.error("❌ WebSocket error", err);
+    };
+
+    socket.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       setMessages((prev) => [...prev, msg]);
     };
 
     return () => {
-      ws.current?.close();
+      socket.close();
     };
   }, [roomId]);
 
+  // ✉️ ฟังก์ชันส่งข้อความ
   const sendMessage = () => {
-    if (input.trim()) {
+    if (input.trim() && ws.current && ws.current.readyState === WebSocket.OPEN) {
       const msg = { text: input, roomId };
       ws.current.send(JSON.stringify(msg));
       setInput("");
     }
   };
-  ws.current.onopen = () => {
-  console.log("✅ WebSocket connected");
-};
 
-ws.current.onerror = (err) => {
-  console.error("❌ WebSocket error", err);
-};
+  
 
   return (
     <div className="p-6">
-      {/* แสดงชื่อห้องที่ดึงมาจาก API */}
-      
+
       <h1 className="text-xl font-bold mb-4">Room: {roomName}</h1>
 
       <div className="bg-white p-4 rounded shadow h-64 overflow-y-auto text-black">
