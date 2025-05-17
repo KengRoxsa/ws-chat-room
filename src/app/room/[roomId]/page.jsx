@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { auth } from "@/app/services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export default function Room() {
   const { roomId } = useParams(); // ✅ ใช้ useParams ดึงค่าจาก URL
   const [roomName, setRoomName] = useState('');
   const router = useRouter();
-  const [rooms, setRooms] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,6 +32,7 @@ export default function Room() {
       alert('Error updating room name');
     }
   };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -53,11 +53,11 @@ export default function Room() {
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
             placeholder="Enter room name"
-            className=" p-2 border border-gray-300 rounded-lg"
+            className="p-3 w-full border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 bg-gray-100 placeholder-gray-500"
           />
           <button
             type="submit"
-            className=" p-2 mt-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="p-3 mt-4 w-full bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500"
           >
             Save Room Name
           </button>
