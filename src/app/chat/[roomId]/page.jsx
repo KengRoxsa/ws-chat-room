@@ -59,8 +59,8 @@ useEffect(() => {
   useEffect(() => {
     
     if (!roomId) return;
-
-    ws.current = new WebSocket(`ws://localhost:3001?roomId=${roomId}`);
+    const socketUrl = `${process.env.NEXT_PUBLIC_WS_URL}?roomId=${roomId}`;
+    ws.current = new WebSocket(socketUrl);
 
     ws.current.onmessage = (event) => {
       const msg = JSON.parse(event.data);
